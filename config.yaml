@@ -1,0 +1,6 @@
+# Consistent file paths
+
+data_dir: "data/"
+raw_data : "data/raw/unclean_Nepali_text_corpus_ieee.txt"
+processed_data : "data/processed/clean_Nepali_text_corpus_ieee.txt"
+inflected : "data/inflected/inflected_pairs.txt"
