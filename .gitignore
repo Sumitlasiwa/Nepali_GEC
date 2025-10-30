@@ -1,6 +1,10 @@
 # Virtual environment
+myenv/
+
+# lora adapters
+adapters/
 
 # Jupyter Notebook checkpoints
-
+outputs/ 
 # Dataset 
 data/
