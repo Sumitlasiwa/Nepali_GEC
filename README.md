@@ -11,43 +11,40 @@
 
 Recommend Project File Structure:
 
+
 nepali_gec/
-│
-├── data/
-│   ├── raw/                # Raw datasets (original files)
-│   ├── inflected/          # error inflected datasets
-│   │   ├── normal/
-│   │   ├── multi/
-│   │   └── semantic/
-│   └── tiny_overfit/       # Small dataset for overfit test
-│
-├── adapters/               # LoRA adapters + fusion
-│   ├── lora_easy/
-│   ├── lora_multi/
-│   ├── lora_semantic/
-│   └── fusion_all/
-│
-├── notebooks/              # Jupyter / Colab notebooks
-│   ├── overfit_test.ipynb
-│   ├── train_lora_adapters.ipynb
-│   ├── adapter_fusion.ipynb
-│   └── evaluation.ipynb
-│
-├── src/                    # Python scripts for training / evaluation
-│   ├── train_lora.py
-│   ├── train_fusion.py
-│   ├── dataset_utils.py
-│   ├── metrics.py
-│   └── inference.py
-│
-├── reports/                # Evaluation results, plots, logs
-│   ├── fusion_eval.txt
-│   └── loss_curves/
-│
-├── configs/                # Hyperparameters and experiment configs
-│   ├── lora_config.json
-│   └── training_args.json
-│
-├── requirements.txt        # Python dependencies
-├── README.md               # Project description & instructions
-└── .gitignore              # Ignore adapters, datasets if too big
+├── README.md
+├── data
+│   ├── cleaned
+│   ├── dictionary.txt
+│   ├── inflected
+│   ├── raw
+│   └── readme.md
+├── myenv
+│   ├── Include
+│   ├── Lib
+│   ├── Scripts
+│   ├── pyvenv.cfg
+│   └── share
+├── notebooks
+│   ├── baseline.ipynb
+│   ├── mt5_model.ipynb
+│   └── mt5_with_lora.ipynb
+├── outputs
+│   ├── best_model
+│   ├── checkpoints
+│   └── logs
+├── requirements.txt            # Python dependencies
+├── src                          # Python scripts for training / evaluation
+│   ├── __pycache__
+│   ├── config.py               # Hyperparameters and experiment configs
+│   ├── data_utils.py
+│   ├── inference.py
+│   ├── main.ipynb
+│   ├── metrics.py
+│   ├── train.py
+│   ├── utils.py
+│   └── wandb
+└── wandb
+    ├── run-20251117_232400-yiy0jf05
+    └── run-20251117_232959-cxs01ivf

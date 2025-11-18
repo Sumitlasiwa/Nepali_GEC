@@ -8,3 +8,6 @@ adapters/
 outputs/ 
 # Dataset 
 data/
+
+# logs
+wandb/

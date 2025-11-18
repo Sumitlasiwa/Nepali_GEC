@@ -1,0 +1,28 @@
+
+📚 Loading dataset: sumitaryal/nepali_grammatical_error_correction
+  Using 15 samples
+  Train: 12 samples
+  Valid: 3 samples
+
+ Lodaing model: google/mt5-small
+You are using the default legacy behaviour of the <class 'transformers.models.t5.tokenization_t5.T5Tokenizer'>. This is expected, and simply means that the `legacy` (previous) behavior will be used so nothing changes for you. If you want to use the new behaviour, set `legacy=False`. This should only be set if you understand what it means, and thoroughly read the reason why this was added as explained in https://github.com/huggingface/transformers/pull/24565
+ Using LoRA + 8-bit quantization
+trainable params: 1,769,472 || all params: 301,946,240 || trainable%: 0.5860
+
+⚙️  Preprocessing dataset...
+Map: 100%|█████████████████████████████████████████████████████████████████████████████| 12/12 [00:00<00:00, 237.48 examples/s]
+Map: 100%|███████████████████████████████████████████████████████████████████████████████| 3/3 [00:00<00:00, 152.03 examples/s]
+  ✅ Preprocessing complete
+
+📊 Training plan:
+  Steps per epoch: 1
+  Total steps: 5
+  Warmup steps: 0
+
+ Running pre-training safety checks...
+Model device: cuda:0
+Train dataset size: 12
+Eval dataset size: 3
+ Data loading failed: Can't get local object 'PreTrainedModel.enable_input_require_grads.<locals>.make_inputs_require_grads'
+
+❌ Safety checks failed! Fix issues before training.
