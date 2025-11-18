@@ -1,11 +1,12 @@
 """
-Evaluation metrics for Nepali GEC
+Evaluation metrics for Nepali GEC with enable/disable support
 """
 
 import evaluate
 import numpy as np
 from collections import Counter
 import re
+
 
 def tokenize_nepali(text):
     """Tokenizes Nepali text: splits on spaces and removes punctuation."""
@@ -43,24 +44,29 @@ def corpus_gec_gleu(references, predictions):
     """
     # Flatten single-reference lists
     refs_flat = [r[0] if isinstance(r, list) else r for r in references]
-    
     scores = [gleu_sentence(r, p) for r, p in zip(refs_flat, predictions)]
     return float(np.mean(scores))
 
-# Load metrics once
-bleu_metric = evaluate.load("sacrebleu")
-chrf_metric = evaluate.load("chrf")
-bertscore_metric = evaluate.load("bertscore")
 
-
-def create_compute_metrics(tokenizer):
+def create_compute_metrics(tokenizer, config):
     """
     Factory function to create compute_metrics with tokenizer
     
     Usage:
         compute_metrics = create_compute_metrics(tokenizer)
     """
-    
+    # Get enabled metrics
+    enabled = config.get_enabled_metrics()
+    print(f"Enabled metrics:{', '.join(enabled)}")
+    # Load only needed metrics
+    metrics = {}
+    if config.bleu:
+        bleu_metric = evaluate.load("sacrebleu")
+    if config.chrf:
+        chrf_metric = evaluate.load("chrf")
+    if config.bertscore:
+        bertscore_metric = evaluate.load("bertscore")
+
     def compute_metrics(eval_pred):
         """
         Compute BLEU, chrF, Correction Accuracy, and BERTScore for Nepali GEC.
@@ -100,76 +106,82 @@ def create_compute_metrics(tokenizer):
         metrics = {}
 
         # --- BLEU ---
-        try:
-            non_empty_indices = [i for i, (p, r) in enumerate(zip(preds_clean, refs_clean)) if p and r]
-            if non_empty_indices:
-                preds_bleu = [preds_clean[i] for i in non_empty_indices]
-                refs_bleu = [[refs_clean[i]] for i in non_empty_indices]
-                bleu_result = bleu_metric.compute(predictions=preds_bleu, references=refs_bleu)
-                metrics["bleu"] = bleu_result["score"]
-            else:
+        if config.bleu:
+            try:
+                non_empty_indices = [i for i, (p, r) in enumerate(zip(preds_clean, refs_clean)) if p and r]
+                if non_empty_indices:
+                    preds_bleu = [preds_clean[i] for i in non_empty_indices]
+                    refs_bleu = [[refs_clean[i]] for i in non_empty_indices]
+                    bleu_result = bleu_metric.compute(predictions=preds_bleu, references=refs_bleu)
+                    metrics["bleu"] = bleu_result["score"]
+                else:
+                    metrics["bleu"] = 0.0
+            except Exception as e:
+                print(f"BLEU computation failed: {e}")
                 metrics["bleu"] = 0.0
-        except Exception as e:
-            print(f"BLEU computation failed: {e}")
-            metrics["bleu"] = 0.0
 
+        # --- GLEU (SacreBLEU) ---
+        if config.gleu:
+            try:
+                gleu_score = corpus_gec_gleu(refs_clean, preds_clean)
+                metrics["gleu"] = gleu_score
+            except Exception as e:
+                print("GLEU failed:", e)
+                metrics["gleu"] = 0.0
+
+        
         # --- chrF ---
-        try:
-            chrf_result = chrf_metric.compute(predictions=preds_clean, references=refs_clean)
-            metrics["chrf"] = chrf_result["score"]
-        except Exception as e:
-            print(f"chrF computation failed: {e}")
-            metrics["chrf"] = 0.0
+        if config.chrf:
+            try:
+                chrf_result = chrf_metric.compute(predictions=preds_clean, references=refs_clean)
+                metrics["chrf"] = chrf_result["score"]
+            except Exception as e:
+                print(f"chrF computation failed: {e}")
+                metrics["chrf"] = 0.0
 
         # --- Correction Accuracy ---
-        try:
-            exact_matches = np.mean([p == r for p, r in zip(preds_clean, refs_clean)])
-            metrics["correction_accuracy"] = exact_matches
-        except Exception as e:
-            print(f"Correction accuracy computation failed: {e}")
-            metrics["correction_accuracy"] = 0.0
+        if config.correction_accuracy:
+            try:
+                exact_matches = np.mean([p == r for p, r in zip(preds_clean, refs_clean)])
+                metrics["correction_accuracy"] = exact_matches
+            except Exception as e:
+                print(f"Correction accuracy computation failed: {e}")
+                metrics["correction_accuracy"] = 0.0
 
         # --- BERTScore ---
-        try:
-            non_empty_indices_bert = [i for i, (p, r) in enumerate(zip(preds_clean, refs_clean)) if p and r]
-            if non_empty_indices_bert:
-                preds_bert = [preds_clean[i] for i in non_empty_indices_bert]
-                refs_bert = [refs_clean[i] for i in non_empty_indices_bert]
-                bertscore_result = bertscore_metric.compute(
-                    predictions=preds_bert,
-                    references=refs_bert,
-                    lang="ne",
-                    model_type="microsoft/mdeberta-v3-base"
-                )
-                metrics["bertscore_f1"] = float(np.mean(bertscore_result["f1"]))
-            else:
+        if config.bertscore:
+            try:
+                non_empty_indices_bert = [i for i, (p, r) in enumerate(zip(preds_clean, refs_clean)) if p and r]
+                if non_empty_indices_bert:
+                    preds_bert = [preds_clean[i] for i in non_empty_indices_bert]
+                    refs_bert = [refs_clean[i] for i in non_empty_indices_bert]
+                    bertscore_result = bertscore_metric.compute(
+                        predictions=preds_bert,
+                        references=refs_bert,
+                        lang="ne",
+                        model_type="microsoft/mdeberta-v3-base"
+                    )
+                    metrics["bertscore_f1"] = float(np.mean(bertscore_result["f1"]))
+                else:
+                    metrics["bertscore_f1"] = 0.0
+            except Exception as e:
+                print(f"BERTScore computation failed: {e}")
                 metrics["bertscore_f1"] = 0.0
-        except Exception as e:
-            print(f"BERTScore computation failed: {e}")
-            metrics["bertscore_f1"] = 0.0
             
-        # --- GLEU (SacreBLEU) ---
-        try:
-            gleu_score = corpus_gec_gleu(refs_clean, preds_clean)
-            metrics["gleu"] = gleu_score
-        except Exception as e:
-            print("GLEU failed:", e)
-            metrics["gleu"] = 0.0
-
         # --- Print one sample for sanity ---
         if len(preds_clean) > 0:
             print(f"🔍 Sample - Pred: '{preds_clean[0][:50]}...' | Ref: '{refs_clean[0][:50]}...' | Match: {preds_clean[0] == refs_clean[0]}")
 
         return metrics
-    
     return compute_metrics
 
 
 if __name__ == "__main__":
     from config import Config
     from train import setup_model
-    _, tokenizer = setup_model(Config)
-    compute_metrics = create_compute_metrics(tokenizer)
+    config = Config()
+    _, tokenizer = setup_model(config)
+    compute_metrics = create_compute_metrics(tokenizer, config)
     preds = ["मेरो नाम सन्तोष हो ।", "म स्कुल जान्छु ।", "म खाना खान्छु ।"]
     refs  = ["मेरो नाम सन्तोष हो ।", "म स्कुल जान्छु ।", "म खाना खान्छु ।"]
     print(compute_metrics((preds, refs)))

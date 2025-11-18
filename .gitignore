@@ -11,3 +11,5 @@ data/
 
 # logs
 wandb/
+
+__pycache__/

@@ -1,3 +1,4 @@
+from typing import List
 from dataclasses import dataclass
 
 @dataclass
@@ -50,3 +51,25 @@ class Config:
         """Set default values that depend on other attributes"""
         if self.lora_target_modules is None:
             self.lora_target_modules = ["q", "k", "v", "o", "wi", "wo"]
+            
+    # Metrics configuratin -control which metric to compute
+    bleu: bool = True
+    chrf: bool = True
+    gleu: bool = True
+    correction_accuracy: bool = True
+    bertscore: bool = False
+    
+    def get_enabled_metrics(self) -> List[str]:
+        """Get list of enabled metrics"""
+        enabled = []
+        if self.bleu:
+            enabled.append("bleu")
+        if self.chrf:
+            enabled.append("chrf")
+        if self.gleu:
+            enabled.append("gleu")
+        if self.correction_accuracy:
+            enabled.append("correction_accuracy")
+        if self.bertscore:
+            enabled.append("bertscore")
+        return enabled

@@ -30,7 +30,7 @@ def setup_model(config):
     """Load and configure model based on settings"""
     print(f"\n Lodaing model: {config.model_id}")
     
-    tokenizer = AutoTokenizer.from_pretrained(config.model_id, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(config.model_id, use_fast=False, legacy=False)
     
     if config.use_lora:
         print(" Using LoRA + 8-bit quantization")
