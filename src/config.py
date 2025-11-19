@@ -13,7 +13,7 @@ class Config:
     # Dataset settings
     dataset_name: str = "sumitaryal/nepali_grammatical_error_correction"
     num_samples: int = 15 # Set to None for full dataset
-    test_size: float = 0.2
+    test_size: float = 0.1
     
     # LoRA settings
     use_lora: bool = True
@@ -26,7 +26,7 @@ class Config:
     batch_size: int = 16
     num_epochs: int  = 5
     gradient_accumulation_steps: int = 2
-    learning_rate: float = 3e-4
+    learning_rate: float = 1e-4
     weight_decay: float = 0.01
     warmup_ratio: float = 0.05
     
@@ -50,7 +50,7 @@ class Config:
     def __post_init__(self):
         """Set default values that depend on other attributes"""
         if self.lora_target_modules is None:
-            self.lora_target_modules = ["q", "k", "v", "o", "wi", "wo"]
+            self.lora_target_modules = ["q", "k", "v", "o"]
             
     # Metrics configuratin -control which metric to compute
     bleu: bool = True
@@ -73,3 +73,6 @@ class Config:
         if self.bertscore:
             enabled.append("bertscore")
         return enabled
+    
+    # To continue training from latest checkpoint
+    resume_from_checkpoint: bool = False
