@@ -13,7 +13,7 @@ class Config:
     # Dataset settings
     dataset_name: str = "sumitaryal/nepali_grammatical_error_correction"
     num_samples: int = 15 # Set to None for full dataset
-    test_size: float = 0.1
+    valid_size: float = 0.1
     
     # LoRA settings
     use_lora: bool = True

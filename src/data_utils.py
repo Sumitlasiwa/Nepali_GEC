@@ -33,7 +33,7 @@ def load_and_prepare_dataset(config):
         print(f"  Using {config.num_samples} samples")
     
     # Create train/valid split
-    split_ds = ds["train"].train_test_split(test_size=config.test_size, seed=config.seed)
+    split_ds = ds["train"].train_test_split(valid_size=config.valid_size, seed=config.seed)
     dataset = {
         "train": split_ds["train"],
         "valid": split_ds["test"]
