@@ -1,5 +1,9 @@
 from typing import List
 from dataclasses import dataclass
+import os
+
+# Get the project root directory
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
 
 @dataclass
 class Config:
@@ -24,7 +28,7 @@ class Config:
     
     # Training settings
     batch_size: int = 16
-    num_epochs: int  = 5
+    num_epochs: int  = 3
     gradient_accumulation_steps: int = 2
     learning_rate: float = 1e-4
     weight_decay: float = 0.01
@@ -36,7 +40,7 @@ class Config:
     gradient_checkpointing: bool = True
     
     # Logging & saving
-    output_dir: str = "../outputs"
+    output_dir: str = os.path.join(PROJECT_ROOT, "outputs")
     logging_steps: int = 1
     save_total_limit: int = 2
     early_stopping_patience: int = 3
@@ -73,6 +77,11 @@ class Config:
         if self.bertscore:
             enabled.append("bertscore")
         return enabled
+    
+    # Callback settings
+    use_sample_prediction_callback: bool = True
+    sample_prediction_num_samples: int = 5
+    use_memory_cleanup_callback: bool = True
     
     # To continue training from latest checkpoint
     resume_from_checkpoint: bool = False

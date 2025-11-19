@@ -2,20 +2,23 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+import os
 import wandb
 from math import ceil
 from transformers import (
     Seq2SeqTrainer,
     DataCollatorForSeq2Seq,
-    EarlyStoppingCallback,
 )
+
+# wandb_dir = os.path.join(os.getcwd(), 'wandb_runs')
+# os.makedirs(wandb_dir, exist_ok=True)
 
 # Import our custom modules
 from config import Config
 from metrics import create_compute_metrics
 from data_utils import set_seeds, load_and_prepare_dataset, preprocess_dataset
 from utils import clear_memory, create_directories, safe_training_check, save_model_safe
-from train import setup_model, create_training_args
+from train import setup_model, create_training_args, create_callbacks
 
 def main():
     """Main training function"""
@@ -40,7 +43,8 @@ def main():
     wandb.finish()
     wandb.init(
         project=config.wandb_project,
-        config=vars(config)
+        config=vars(config),
+        # dir=wandb_dir
     )
     run_id = wandb.run.id
     
@@ -65,6 +69,9 @@ def main():
     # Create metrics
     compute_metrics = create_compute_metrics(tokenizer, config)
     
+    # Create callbacks
+    callbacks = create_callbacks(config, tokenizer, dataset)
+    
     # Create trainer
     trainer = Seq2SeqTrainer(
         model=model,
@@ -74,9 +81,7 @@ def main():
         tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
-        callbacks=[
-            EarlyStoppingCallback(early_stopping_patience=config.early_stopping_patience)
-        ]
+        callbacks=callbacks,
     )
     
         # Safety check
@@ -90,7 +95,11 @@ def main():
     print("=" * 60)
     
     try:
-        trainer.train()
+        if config.resume_from_checkpoint:
+            print("continuing training from latest checkpoint.....")
+            trainer.train(resume_from_checkpoint=True)
+        else:
+            trainer.train()
         print("\n✅ Training complete!")
     except Exception as e:
         print(f"\n❌ Training failed: {e}")
